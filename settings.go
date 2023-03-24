@@ -20,7 +20,6 @@ func init() {
 	file, err := os.Open("settings.cfg")
 	if err != nil {
 		fmt.Println(err.Error())
-
 		panic("Can't open the configuration")
 	}
 	defer file.Close()
@@ -28,7 +27,6 @@ func init() {
 	stat, err := file.Stat()
 	if err != nil {
 		fmt.Println(err.Error())
-
 		panic("Cant't read the structure of the configuration")
 	}
 
@@ -37,13 +35,11 @@ func init() {
 	_, err = file.Read(readByte)
 	if err != nil {
 		fmt.Println(err.Error())
-
 		panic("Can't read the configuration")
 	}
 	err = json.Unmarshal(readByte, &cfg)
 	if err != nil {
 		fmt.Println(err.Error())
-
 		panic("Can't read configuratiion data")
 	}
 }

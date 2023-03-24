@@ -2,7 +2,7 @@ version: '3.5'
 
 services:
   order_wb:
-    container_name: order_wb
+    #container_name: order_wb
     ports:
       - "5432:5432"
     environment:
@@ -16,5 +16,21 @@ services:
       - ./sql/create_tables.sql:/docker-entrypoint-initdb.d/create_tables.sql
       # copy the sql script to fill tables
       #- ./sql/fill_tables.sql:/docker-entrypoint-initdb.d/fill_tables.sql
+  nats:
+    image: nats
+    ports:
+      - "8222:8222"
+    command: "--cluster_name NATS --cluster nats://0.0.0.0:6222 --http_port 8222 "
+    networks: ["nats_wb"]
+  nats-1:
+    image: nats
+    command: "--cluster_name NATS --cluster nats://0.0.0.0:6222 --routes=nats://ruser:T0pS3cr3t@nats:6222"
+    networks: ["nats_wb"]
+    depends_on: ["nats"]
+
+networks:
+  nats_wb:
+    name: nats_wb
+
 volumes:
   sql:  

@@ -22,6 +22,7 @@ func main() {
 	router.GET("/images", index)
 
 	router.Run(cfg.ServerHost + ":" + cfg.ServerPort)
+
 }
 
 func index(c *gin.Context) {
