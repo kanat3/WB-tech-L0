@@ -13,7 +13,8 @@
 !*.yaml
 !*.sql
 !images/*
-!html/*
+!static/*
+!static/css/*
 !*.go
 !go.sum
 !go.mod
