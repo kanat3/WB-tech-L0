@@ -20,11 +20,13 @@ func main() {
 
 	router = gin.Default()
 
-	router.LoadHTMLFiles(cfg.HTML + "index.html")
-	router.Static("/images", "./images")
+	router.LoadHTMLFiles(cfg.Static + "index.html")
+	router.Static("/images", cfg.Images)
+	router.Static("static/css", "./static/css")
 
 	router.GET("/", index)
 	router.GET("/images", index)
+	router.GET("/static/css", index)
 
 	router.Run(cfg.ServerHost + ":" + cfg.ServerPort)
 

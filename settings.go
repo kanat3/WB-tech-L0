@@ -9,7 +9,7 @@ import (
 type settings struct {
 	ServerHost string
 	ServerPort string
-	HTML       string
+	Static     string
 	Images     string
 }
 
