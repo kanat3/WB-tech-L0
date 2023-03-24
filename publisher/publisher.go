@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"math/rand"
 	"os"
+	"os/signal"
 	"time"
 
 	"github.com/nats-io/stan.go"
@@ -38,6 +39,10 @@ func (pub *Publisher) Run() {
 			time.Sleep(30 * time.Second)
 		}
 	}()
+	end := make(chan os.Signal, 1)
+	signal.Notify(end, os.Interrupt)
+
+	<-end
 }
 
 func (pub *Publisher) SimulatePub() error {
