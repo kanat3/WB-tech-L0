@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"math/rand"
 	"os"
+	"time"
 
 	"github.com/nats-io/stan.go"
 )
@@ -28,9 +29,20 @@ func New() *Publisher {
 	return pub
 }
 
+// Push msg and waiting 30 sec
+
+func (pub *Publisher) Run() {
+	go func() {
+		for {
+			pub.CreateMsg([]byte(fmt.Sprintf("%v", pub.Data)))
+			time.Sleep(30 * time.Second)
+		}
+	}()
+}
+
 func (pub *Publisher) SimulatePub() error {
 	var fakeOrder orders.Order
-	error := fakeOrder.ReadOrder()
+	error := fakeOrder.New()
 	if error != nil {
 		fmt.Println(error.Error())
 		return errors.New("Can't create an order")
@@ -64,7 +76,7 @@ func (pub *Publisher) New() {
 }
 
 func (pub *PubConfig) CreatePublisher() {
-	//try read config
+	//Try read config
 	file, err := os.Open("publisher/publisher.cfg")
 	if err != nil {
 		fmt.Println(err.Error())

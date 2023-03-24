@@ -56,7 +56,7 @@ type Order struct {
 	Oof_shard                string `json:"oof_shard"`
 }
 
-func (o *Order) ReadOrder() error {
+func (o *Order) New() error {
 	file, error := os.Open("orders/model.json")
 	if error != nil {
 		fmt.Println(error.Error())
