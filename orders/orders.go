@@ -5,8 +5,14 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"math/rand"
 	"os"
 )
+
+type OrderJSON struct {
+	Order_uid string `json:"order_uid"`
+	DataJSON  string `json:"data"`
+}
 
 type Order struct {
 	Order_uid    string `json:"order_uid"`
@@ -56,7 +62,9 @@ type Order struct {
 	Oof_shard                string `json:"oof_shard"`
 }
 
-func (o *Order) New() error {
+// for testing nats
+
+func (order *Order) New() error {
 	file, error := os.Open("orders/model.json")
 	if error != nil {
 		fmt.Println(error.Error())
@@ -69,6 +77,32 @@ func (o *Order) New() error {
 		fmt.Println(error.Error())
 		return errors.New("Can't read headers")
 	}
-	json.Unmarshal(data, &o)
+	json.Unmarshal(data, &order)
 	return nil
+}
+
+// for publisher
+
+func (order *OrderJSON) New(fname string) error {
+	file, error := os.Open(fname)
+	if error != nil {
+		fmt.Println(error.Error())
+		return errors.New("Can't open the file")
+	}
+	defer file.Close()
+
+	data, error := ioutil.ReadAll(file)
+	if error != nil {
+		fmt.Println(error.Error())
+		return errors.New("Can't read headers")
+	}
+	order.DataJSON = string(data)
+	order.RandomID()
+	return nil
+}
+
+func (order *OrderJSON) RandomID() {
+	id := fmt.Sprintf("%d", rand.Int()%3000000)
+	fmt.Printf("Generated id: %s\n", id)
+	order.Order_uid = id
 }

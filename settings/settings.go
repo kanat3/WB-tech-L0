@@ -1,4 +1,4 @@
-package main
+package settings
 
 import (
 	"encoding/json"
@@ -6,18 +6,17 @@ import (
 	"os"
 )
 
-type settings struct {
+type Settings struct {
 	ServerHost string
 	ServerPort string
 	Static     string
 	Images     string
 }
 
-var cfg settings
+func NewConfig(any interface{}, fName string) {
 
-func init() {
 	//try read config
-	file, err := os.Open("settings.cfg")
+	file, err := os.Open(fName)
 	if err != nil {
 		fmt.Println(err.Error())
 		panic("Can't open the configuration")
@@ -37,7 +36,7 @@ func init() {
 		fmt.Println(err.Error())
 		panic("Can't read the configuration")
 	}
-	err = json.Unmarshal(readByte, &cfg)
+	err = json.Unmarshal(readByte, &any)
 	if err != nil {
 		fmt.Println(err.Error())
 		panic("Can't read configuratiion data")

@@ -1,8 +1,8 @@
 package publisher
 
 import (
-	"Work/WB-tech-L0/orders"
-	"encoding/json"
+	"WB-tech-L0/orders"
+	"WB-tech-L0/settings"
 	"errors"
 	"fmt"
 	"math/rand"
@@ -24,19 +24,18 @@ type Publisher struct {
 	Data     orders.Order
 }
 
-func New() *Publisher {
-	pub := &Publisher{}
-	pub.Settings.CreatePublisher()
-	return pub
-}
-
 // Push msg and waiting 30 sec
 
 func (pub *Publisher) Run() {
+	fmt.Println("Here...")
 	go func() {
 		for {
+			fmt.Println("Ok running publisher...")
+			// generate id for new data
+			pub.Data.Order_uid = randId()
 			pub.CreateMsg([]byte(fmt.Sprintf("%v", pub.Data)))
-			time.Sleep(30 * time.Second)
+			fmt.Printf("\npub.Data: %v\n", pub.Data)
+			time.Sleep(10 * time.Second)
 		}
 	}()
 	end := make(chan os.Signal, 1)
@@ -45,66 +44,37 @@ func (pub *Publisher) Run() {
 	<-end
 }
 
-func (pub *Publisher) SimulatePub() error {
-	var fakeOrder orders.Order
-	error := fakeOrder.New()
+func (pub *Publisher) CreateMsg(msg []byte) error {
+	// Connecting
+	fmt.Printf("Config: %v\n", pub.Settings)
+	sc, error := stan.Connect(pub.Settings.Cluster, pub.Settings.PubName, stan.NatsURL("nats1://localhost:4222"))
+	// Close connection after publishing
 	if error != nil {
 		fmt.Println(error.Error())
-		return errors.New("Can't create an order")
+		return errors.New("Can't connect to the cluster")
 	}
-	fakeOrder.Order_uid = randId()
-	pub.Data = fakeOrder
+	defer sc.Close()
+	// Create a msg
+	fmt.Println("Trying to create msg")
+	sc.Publish(pub.Settings.Channel, msg)
+	fmt.Printf("'%s' Should see a message in cluster '%s'\n", pub.Settings.Channel, pub.Settings.Cluster)
 	return nil
 }
 
-func (pub *Publisher) CreateMsg(msg []byte) {
-	// Connecting
-	sc, error := stan.Connect(pub.Settings.Cluster, pub.Settings.PubName)
-	// Close connection after publishing
-	defer sc.Close()
-	if error != nil {
-		fmt.Println("Can't connect to the cluster")
-		return
-	}
-	// Create a msg
-	sc.Publish(pub.Settings.Channel, msg)
-	fmt.Printf("'%s' Should see a message in cluster '%s'\n", pub.Settings.Channel, pub.Settings.Cluster)
-}
-
 func randId() string {
-	newId := fmt.Sprintf("%d", rand.Int()%50)
+	newId := fmt.Sprintf("%d", rand.Int()%3000000)
 	return newId
 }
 
 func (pub *Publisher) New() {
+	fmt.Printf("%s", "Trying to create settings in pub...\n")
 	pub.Settings.CreatePublisher()
+	pub.Data.New()
+	// General uid
+	pub.Data.Order_uid = "1"
 }
 
 func (pub *PubConfig) CreatePublisher() {
 	//Try read config
-	file, err := os.Open("publisher/publisher.cfg")
-	if err != nil {
-		fmt.Println(err.Error())
-		panic("Can't open the configuration")
-	}
-	defer file.Close()
-
-	stat, err := file.Stat()
-	if err != nil {
-		fmt.Println(err.Error())
-		panic("Cant't read the structure of the configuration")
-	}
-
-	readByte := make([]byte, stat.Size())
-
-	_, err = file.Read(readByte)
-	if err != nil {
-		fmt.Println(err.Error())
-		panic("Can't read the configuration")
-	}
-	err = json.Unmarshal(readByte, &pub)
-	if err != nil {
-		fmt.Println(err.Error())
-		panic("Can't read configuratiion data")
-	}
+	settings.NewConfig(pub, "publisher/publisher.cfg")
 }
