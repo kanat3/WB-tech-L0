@@ -10,7 +10,7 @@ import (
 )
 
 type OrderJSON struct {
-	Order_uid string `json:"order_uid"`
+	Order_uid string `json:"id"`
 	DataJSON  string `json:"data"`
 }
 
@@ -68,14 +68,14 @@ func (order *Order) New() error {
 	file, error := os.Open("orders/model.json")
 	if error != nil {
 		fmt.Println(error.Error())
-		return errors.New("Can't open the file")
+		return errors.New("Can't open the file\n")
 	}
 	defer file.Close()
 
 	data, error := ioutil.ReadAll(file)
 	if error != nil {
 		fmt.Println(error.Error())
-		return errors.New("Can't read headers")
+		return errors.New("Can't read headers\n")
 	}
 	json.Unmarshal(data, &order)
 	return nil
@@ -87,17 +87,35 @@ func (order *OrderJSON) New(fname string) error {
 	file, error := os.Open(fname)
 	if error != nil {
 		fmt.Println(error.Error())
-		return errors.New("Can't open the file")
+		return errors.New("Can't open the file\n")
 	}
 	defer file.Close()
 
 	data, error := ioutil.ReadAll(file)
 	if error != nil {
 		fmt.Println(error.Error())
-		return errors.New("Can't read headers")
+		return errors.New("Can't read headers\n")
 	}
 	order.DataJSON = string(data)
 	order.RandomID()
+	return nil
+}
+
+func (order *OrderJSON) NewById(fname string, id string) error {
+	file, error := os.Open(fname)
+	if error != nil {
+		fmt.Println(error.Error())
+		return errors.New("Can't open the file\n")
+	}
+	defer file.Close()
+
+	data, error := ioutil.ReadAll(file)
+	if error != nil {
+		fmt.Println(error.Error())
+		return errors.New("Can't read headers\n")
+	}
+	order.DataJSON = string(data)
+	order.Order_uid = id
 	return nil
 }
 

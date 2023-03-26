@@ -48,11 +48,11 @@ func (bd *DataCache) InsertByLabel(id string, json string) {
 	bd.Data[id] = order
 }
 
-func (bd *DataCache) Get(key string) (orders.OrderJSON, error) {
+func (bd *DataCache) GetById(key string) (orders.OrderJSON, error) {
 	bd.RLock()
 	defer bd.RUnlock()
 	if bd.Data[key].Order_uid == "" {
-		return bd.Data[key], errors.New("Here no such order with your ID :(")
+		return bd.Data[key], errors.New("Datacache: here no such order with your ID\n")
 	}
 	return bd.Data[key], nil
 }

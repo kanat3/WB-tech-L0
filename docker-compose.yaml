@@ -20,6 +20,7 @@ services:
     image: nats-streaming:linux
     ports:
       - "4222:4222"
-    command: "--cluster_name orders --cluster nats://0.0.0.0:4248 --routes nats://nats1:4248"
+      - "8222:8222"
+    command: "--cluster_name orders --cluster nats://0.0.0.0:4248 --routes nats://nats1:4248 --http_port 8222"
 volumes:
   sql:  

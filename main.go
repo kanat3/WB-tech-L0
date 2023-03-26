@@ -3,8 +3,11 @@ package main
 import (
 	//"Work/WB-tech-L0/datacache"
 
+	"WB-tech-L0/publisher"
 	"WB-tech-L0/subscriber"
 	"fmt"
+	"os"
+	"os/signal"
 
 	"github.com/gin-gonic/gin"
 )
@@ -15,8 +18,10 @@ func main() {
 
 	var sub *subscriber.Subscriber
 
+	// intitialization
 	sub = subscriber.New()
 
+	// connect to bd
 	db, error := sub.DbConnect()
 
 	if error != nil {
@@ -24,57 +29,82 @@ func main() {
 		return
 	}
 
-	// create data to push
-
-	//var order orders.OrderJSON
-
-	//order.New("orders/model.json")
-
-	//sub.PushOrder(order, db)
-	//fmt.Printf("Data id generated: \n %v \n", order.Order_uid)
 	// get all database to cache
 
-	sub.DbToCache(db)
+	// pull every note from database to subscriber.cache
+	error = sub.DbToCache(db)
 
-	fmt.Printf("Sublisher all data: \n %v \n %v \n %v \n", sub.SubSettings, sub.DbSettings, sub.Cache)
+	if error != nil {
+		fmt.Printf(error.Error())
+		return
+	}
+
+	go sub.Run()
+
+	// create data to push
+	/*
+		var order orders.OrderJSON
+
+		order.New("orders/model.json")
+
+		sub.PushOrder(order, db)
+		fmt.Printf("Data id generated: \n %v \n", order.Order_uid)
+	*/
+	// here using get from cache. Ok
+	/*
+		var order_get orders.OrderJSON
+
+		order_get, error = sub.Cache.GetById(order.Order_uid)
+
+		if error != nil {
+			fmt.Printf(error.Error())
+			return
+		}
+
+		fmt.Printf("Data by getted by subcriber: \n %v", order_get)
+	*/
+	// is working
+	//fmt.Printf("Sublisher all data: \n %v \n %v \n %v \n", sub.SubSettings, sub.DbSettings, sub.Cache)
 
 	// try to push it in database
 
 	//data := datacache.New()
-	/*
-		var pub publisher.Publisher
-		pub.New()
 
-		pub.Run()
+	router = gin.Default()
 
-		var cfg settings.Settings
-		settings.NewConfig(cfg, "settings.cfg")
-		fmt.Println(cfg.ServerHost + ":" + cfg.ServerPort)
-	*/
-	/*
-		router = gin.Default()
+	router.LoadHTMLFiles("static/index.html", "static/bye_page.html")
+	router.Static("/images", "./images")
+	router.Static("static/css", "./static/css")
 
-		router.LoadHTMLFiles(cfg.Static+"index.html", cfg.Static+"bye_page.html")
-		router.Static("/images", cfg.Images)
-		router.Static("static/css", "./static/css")
+	router.GET("/bye_page", bye)
 
-		router.GET("/bye_page", bye)
-		router.GET("/", func(c *gin.Context) {
-			index(c)
-			pub.Data.Order_uid = getId(c)
-			fmt.Println("id is: ", pub.Data.Order_uid)
-		})
+	var pub publisher.Publisher
+	id := ""
+	pub.New()
 
-		router.GET("/images", images)
-		router.GET("/static/css", page)
+	go pub.Run()
 
-		router.Run(cfg.ServerHost + ":" + cfg.ServerPort)
+	router.GET("/", func(c *gin.Context) {
+		index(c)
+		id = getId(c)
+		_, error := sub.Cache.GetById(id)
+		if error != nil {
+			fmt.Print(error.Error())
+		} else {
+			fmt.Printf("OK: found order with id: %v\n", id)
+		}
+	})
 
-		end := make(chan os.Signal, 1)
-		signal.Notify(end, os.Interrupt)
+	router.GET("/images", images)
+	router.GET("/static/css", page)
 
-		<-end
-	*/
+	router.Run("127.0.0.1:8090")
+
+	end := make(chan os.Signal, 1)
+	signal.Notify(end, os.Interrupt)
+
+	<-end
+
 }
 
 func getId(c *gin.Context) (id string) {
