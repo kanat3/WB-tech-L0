@@ -1,9 +1,10 @@
+
 ```
 sudo docker-compose up --build -d
 go build
 ./WB-tech-L0
 ```
-##### Подключитья к базе данных:
+##### Подключиться к базе данных:
 ###### Пароль: root
 ```
 sudo docker ps -a
